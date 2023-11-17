@@ -3,45 +3,49 @@ services:
   # Ahora se indican los servicios por el orden en que se quiere que se inicien.
   # Por ejemplo, mongo debe estar antes de order.
   mongo:
-    image: paberlo/p2gps:db
+    image: sandraterrin/p2gps:db
     deploy:
       replicas: 1 # Para escalabilidad del servicio.
       resources:
        limits:
         cpus: "0.15"
-        memory: 200M
+        #memory: 200M
       restart_policy:
-       condition: on-failure # Reiniciar el contenedor si falla
+       condition: none # Reiniciar el contenedor si falla
     ports:
       - "28017:28017" # Mapeo el puerto del contenedor (derecha) con el puerto del host del servicio
       - "27017:27017"
     volumes:
-      - "db-data:/data/db" # Para dar persistencia a la sesión
+      - "db-data:/var/logs/" # Para dar persistencia a la sesión
   order:
-    image: paberlo/p2gps:order
+    image: sandraterrin/p2gps:order
     depends_on:
       - "mongo" # Le pasamos al servicio order la IP del servicio mongo
     deploy:
       replicas: 1
       resources:
        limits:
-        cpus: "0.3"
-        memory: 500M
+        cpus: "1.0"
+       # memory: 500M
       restart_policy:
-       condition: on-failure
+       condition: none
     ports:
-      - "8080:8080"
+      - ":8080"
   web:
-    image: paberlo/p2gps:web
+    image: sandraterrin/p2gps:web
     deploy:
       replicas: 1
       resources:
        limits:
         cpus: "0.25"
-        memory: 300M
+       # memory: 300M
       restart_policy:
-       condition: on-failure
+       condition: none
     ports:
-      - "80:8080"
+      - ":8082"
 volumes:
-      db-data:
+  db-data:
+    driver: azure_file
+    driver_opts:
+      share_name: db-data
+      storage_account_name: almacengps7137
